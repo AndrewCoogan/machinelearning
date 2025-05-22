@@ -2,11 +2,11 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net462;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net48;net9.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net8.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(TargetArchitecture)' == 'arm64'">net8.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(TestTargetFramework)' != ''">$(TestTargetFramework)</TargetFrameworks>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net462'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net48'">win-x64</RuntimeIdentifier>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -34,13 +34,8 @@
     <PackageReference Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsVersion)" />
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafeVersion)" PrivateAssets="all" GeneratePathProperty="true" />
 
-    <!-- workaround stale references in test packages by 
-         1) updating NETStandard.Library - the newer version brings less references on netstandard2.0 compatible frameworks.
-         2) updating Microsoft.NETCore.Targets - the newer version prevents .NETCore 1.x era runtime.* packages from being referenced. -->
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
+    <Reference Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

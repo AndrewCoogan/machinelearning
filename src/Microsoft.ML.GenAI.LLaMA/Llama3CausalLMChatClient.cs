@@ -20,12 +20,12 @@ public class Llama3CausalLMChatClient : CausalLMPipelineChatClient<Tokenizer, Ll
         : base(
             pipeline,
             chatTemplateBuilder ?? Llama3_1ChatTemplateBuilder.Instance,
-            metadata ?? new ChatClientMetadata(modelId: nameof(Llama3CausalLMChatClient)))
+            metadata ?? new ChatClientMetadata(defaultModelId: nameof(Llama3CausalLMChatClient)))
     {
     }
 
-    public override Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages,
+    public override Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -40,11 +40,11 @@ public class Llama3CausalLMChatClient : CausalLMPipelineChatClient<Tokenizer, Ll
             options.StopSequences = new List<string> { _eotToken };
         }
 
-        return base.CompleteAsync(chatMessages, options, cancellationToken);
+        return base.GetResponseAsync(messages, options, cancellationToken);
     }
 
-    public override IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages,
+    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -52,6 +52,6 @@ public class Llama3CausalLMChatClient : CausalLMPipelineChatClient<Tokenizer, Ll
         options.StopSequences ??= [];
         options.StopSequences.Add(_eotToken);
 
-        return base.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+        return base.GetStreamingResponseAsync(messages, options, cancellationToken);
     }
 }

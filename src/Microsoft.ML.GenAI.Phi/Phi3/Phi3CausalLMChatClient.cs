@@ -25,12 +25,12 @@ public class Phi3CausalLMChatClient : CausalLMPipelineChatClient<Tokenizer, Phi3
         : base(
             pipeline,
             templateBuilder ?? Phi3ChatTemplateBuilder.Instance,
-            metadata ?? new ChatClientMetadata(modelId: nameof(Phi3CausalLMChatClient)))
+            metadata ?? new ChatClientMetadata(defaultModelId: nameof(Phi3CausalLMChatClient)))
     {
     }
 
-    public override Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages,
+    public override Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -45,11 +45,11 @@ public class Phi3CausalLMChatClient : CausalLMPipelineChatClient<Tokenizer, Phi3
             options.StopSequences = [_eotToken];
         }
 
-        return base.CompleteAsync(chatMessages, options, cancellationToken);
+        return base.GetResponseAsync(messages, options, cancellationToken);
     }
 
-    public override IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages,
+    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -57,6 +57,6 @@ public class Phi3CausalLMChatClient : CausalLMPipelineChatClient<Tokenizer, Phi3
         options.StopSequences ??= [];
         options.StopSequences.Add(_eotToken);
 
-        return base.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+        return base.GetStreamingResponseAsync(messages, options, cancellationToken);
     }
 }

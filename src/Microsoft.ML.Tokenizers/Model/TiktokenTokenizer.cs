@@ -1010,6 +1010,9 @@ namespace Microsoft.ML.Tokenizers
         private const string FimMiddle = "<|fim_middle|>";
         private const string FimSuffix = "<|fim_suffix|>";
         private const string EndOfPrompt = "<|endofprompt|>";
+        private const string IMStart = "<|im_start|>";
+        private const string IMEnd = "<|im_end|>";
+        private const string IMSep = "<|im_sep|>";
 
         private enum ModelEncoding
         {
@@ -1022,10 +1025,14 @@ namespace Microsoft.ML.Tokenizers
             O200kBase
         }
 
+        private const string Phi4ModelName = "phi-4";
+
         private static readonly (string Prefix, ModelEncoding Encoding)[] _modelPrefixToEncoding =
                                                             [
                                                                 // chat
                                                                 ( "o1-", ModelEncoding.O200kBase ),       // e.g. o1-mini
+                                                                ( "o3-", ModelEncoding.O200kBase ),       // e.g. o3-mini
+                                                                ( "gpt-4.1-", ModelEncoding.O200kBase),   // e.g., gpt-4.1-mini
                                                                 ( "gpt-4o-", ModelEncoding.O200kBase),    // e.g., gpt-4o-2024-05-13
                                                                 ( "gpt-4-", ModelEncoding.Cl100kBase),    // e.g., gpt-4-0314, etc., plus gpt-4-32k
                                                                 ( "gpt-3.5-", ModelEncoding.Cl100kBase),  // e.g, gpt-3.5-turbo-0301, -0401, etc.
@@ -1038,6 +1045,9 @@ namespace Microsoft.ML.Tokenizers
                                                                 // chat
                                                                 { "gpt-4o", ModelEncoding.O200kBase },
                                                                 { "o1", ModelEncoding.O200kBase },
+                                                                { "o3", ModelEncoding.O200kBase },
+                                                                { "o4-mini", ModelEncoding.O200kBase },
+                                                                { "gpt-4.1", ModelEncoding.O200kBase },
                                                                 { "gpt-4", ModelEncoding.Cl100kBase },
                                                                 { "gpt-3.5-turbo", ModelEncoding.Cl100kBase },
                                                                 { "gpt-3.5-turbo-16k", ModelEncoding.Cl100kBase },
@@ -1088,7 +1098,10 @@ namespace Microsoft.ML.Tokenizers
                                                                 { "code-search-ada-code-001", ModelEncoding.R50kBase },
 
                                                                 // open source
-                                                                { "gpt2", ModelEncoding.GPT2 }
+                                                                { "gpt2", ModelEncoding.GPT2 },
+
+                                                                // phi-4
+                                                                { Phi4ModelName, ModelEncoding.Cl100kBase },
                                                             };
 
         private static ModelEncoding GetModelEncoding(string modelName)
@@ -1120,8 +1133,13 @@ namespace Microsoft.ML.Tokenizers
             switch (modelEncoding)
             {
                 case ModelEncoding.Cl100kBase:
-                    return (new Dictionary<string, int>
-                        { { EndOfText, 100257}, { FimPrefix, 100258}, { FimMiddle, 100259}, { FimSuffix, 100260}, { EndOfPrompt, 100276} }, Cl100kBaseRegex(), Cl100kBaseVocabFile, Type.GetType(Cl100kBaseTypeName), Cl100kBasePackageName);
+                    return (
+                        Phi4ModelName.Equals(modelName, StringComparison.OrdinalIgnoreCase) ?
+                        new Dictionary<string, int> { { EndOfText, 100257 }, { FimPrefix, 100258 }, { FimMiddle, 100259 }, { FimSuffix, 100260 }, { EndOfPrompt, 100276 }, { IMStart, 100264 },
+                                                      { IMEnd, 100265 }, { IMSep, 100266 }, { "<|dummy_85|>", 100349}, // <|dummy_85|> is used for padding according to the phi-4 special token mapping.
+                        } :
+                        new Dictionary<string, int> { { EndOfText, 100257 }, { FimPrefix, 100258 }, { FimMiddle, 100259 }, { FimSuffix, 100260 }, { EndOfPrompt, 100276 } },
+                        Cl100kBaseRegex(), Cl100kBaseVocabFile, Type.GetType(Cl100kBaseTypeName), Cl100kBasePackageName);
 
                 case ModelEncoding.GPT2:
                     return (new Dictionary<string, int> { { EndOfText, 50256 }, }, P50kBaseRegex(), GPT2File, Type.GetType(Gpt2TypeName), Gpt2PackageName);
